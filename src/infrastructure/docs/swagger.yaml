@@ -1,0 +1,524 @@
+openapi: 3.0.3
+info:
+  title: Fuzzy Fiesta Trading API
+  version: 1.0.0
+  description: |
+    API de trading e inversiones. Permite buscar instrumentos financieros,
+    crear órdenes de compra/venta y consultar el portfolio de un usuario.
+
+    **Convenciones de fecha:** todas las fechas se transmiten en formato ISO 8601
+    con sufijo UTC explícito (ej. `2026-02-20T17:00:00.000Z`).
+
+servers:
+  - url: http://localhost:{port}
+    description: Servidor local
+    variables:
+      port:
+        default: '3000'
+        description: Puerto del servidor (variable de entorno PORT)
+
+tags:
+  - name: Instruments
+    description: Búsqueda de instrumentos financieros
+  - name: Orders
+    description: Creación de órdenes de trading
+  - name: Portfolio
+    description: Consulta del portfolio de un usuario
+
+paths:
+
+  /instruments:
+    get:
+      tags: [Instruments]
+      summary: Buscar instrumentos financieros
+      description: |
+        Busca instrumentos cuyo ticker o nombre contenga el texto indicado en `q`.
+        La búsqueda es case-insensitive.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Texto a buscar (ticker o nombre del instrumento)
+          schema:
+            type: string
+            minLength: 1
+            example: GGAL
+      responses:
+        '200':
+          description: Lista de instrumentos que coinciden con la búsqueda
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchInstrumentsResponse'
+              example:
+                instruments:
+                  - id: 34
+                    ticker: GGAL
+                    name: Grupo Financiero Galicia
+                    type: ACCIONES
+                    marketPrice: 885.80
+                    returnPct: -3.4813
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /portfolio/{userId}:
+    get:
+      tags: [Portfolio]
+      summary: Obtener portfolio de un usuario
+      description: |
+        Devuelve el saldo en pesos, el valor total y los activos en cartera del usuario.
+        El cálculo se basa exclusivamente en órdenes con estado `FILLED`.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: ID del usuario
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+      responses:
+        '200':
+          description: Portfolio del usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetPortfolioResponse'
+              example:
+                totalAccountValue: 904784
+                pesosBalance: 753000
+                assets:
+                  - instrument:
+                      id: 47
+                      ticker: PAMP
+                      description: Pampa Holding S.A.
+                    quantity: 40
+                    marketValue: 37034
+                    returnPct: 0.4394
+                  - instrument:
+                      id: 54
+                      ticker: METR
+                      description: MetroGAS S.A.
+                    quantity: 500
+                    marketValue: 114750
+                    returnPct: -1.0776
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /orders/{orderId}:
+    delete:
+      tags: [Orders]
+      summary: Cancelar una orden
+      description: |
+        Cancela una orden existente del usuario. Solo las órdenes con estado `NEW` pueden cancelarse.
+
+        Si el `orderId` no existe o no pertenece al `userId` indicado, se retorna `400` con `OrderNotFoundError`.
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          description: ID de la orden a cancelar
+          schema:
+            type: integer
+            minimum: 1
+            example: 5
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId:
+                  type: integer
+                  minimum: 1
+                  description: ID del usuario propietario de la orden
+                  example: 1
+            example:
+              userId: 1
+      responses:
+        '200':
+          description: Orden cancelada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelOrderResponse'
+              example:
+                order:
+                  id: 5
+                  userId: 1
+                  instrumentId: 45
+                  side: BUY
+                  type: LIMIT
+                  size: 50
+                  price: 710
+                  status: CANCELLED
+                  datetime: "2023-07-12T15:14:20.000Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /orders:
+    post:
+      tags: [Orders]
+      summary: Crear una orden de trading
+      description: |
+        Crea una orden de compra, venta o transferencia de efectivo.
+
+        **Reglas de negocio:**
+        - Si hay fondos/acciones insuficientes, la orden se persiste con estado `REJECTED`.
+        - Para órdenes `CASH_IN` / `CASH_OUT` el instrumento debe ser de tipo `MONEDA` y el tipo de orden debe ser `MARKET`.
+        - Se puede proveer `size` (cantidad de acciones) **o** `amount` (monto en pesos), pero no ambos.
+        - El tamaño efectivo se calcula como `floor(amount / price)`.
+
+        **Campos de fecha:** `datetime` es opcional. Si se omite, se usa la fecha/hora actual (UTC).
+        Si se envía sin indicador de zona horaria, se interpreta como UTC.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/MarketOrderInput'
+                - $ref: '#/components/schemas/LimitOrderInput'
+            examples:
+              market_buy_by_amount:
+                summary: Compra de mercado por monto
+                value:
+                  userId: 1
+                  instrumentId: 34
+                  side: BUY
+                  type: MARKET
+                  amount: 50000
+              market_sell_by_size:
+                summary: Venta de mercado por cantidad
+                value:
+                  userId: 1
+                  instrumentId: 34
+                  side: SELL
+                  type: MARKET
+                  size: 5
+              limit_buy:
+                summary: Compra limitada con precio
+                value:
+                  userId: 1
+                  instrumentId: 34
+                  side: BUY
+                  type: LIMIT
+                  size: 10
+                  price: 800
+              cash_in:
+                summary: Ingreso de efectivo
+                value:
+                  userId: 1
+                  instrumentId: 66
+                  side: CASH_IN
+                  type: MARKET
+                  amount: 50000
+      responses:
+        '201':
+          description: Orden creada (puede ser FILLED, NEW o REJECTED según disponibilidad)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOrderResponse'
+              examples:
+                filled:
+                  summary: Orden ejecutada
+                  value:
+                    order:
+                      id: 101
+                      userId: 1
+                      instrumentId: 34
+                      side: BUY
+                      type: MARKET
+                      size: 56
+                      price: 885.80
+                      status: FILLED
+                      datetime: "2026-02-20T17:00:00.000Z"
+                rejected:
+                  summary: Orden rechazada por fondos insuficientes
+                  value:
+                    order:
+                      id: 102
+                      userId: 1
+                      instrumentId: 34
+                      side: BUY
+                      type: MARKET
+                      size: 999999
+                      price: 885.80
+                      status: REJECTED
+                      datetime: "2026-02-20T17:00:00.000Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+
+  schemas:
+
+    # ── Request schemas ──────────────────────────────────────────────────────
+
+    MarketOrderInput:
+      type: object
+      required: [userId, instrumentId, side, type]
+      description: Orden de mercado. Se ejecuta al precio de mercado vigente.
+      properties:
+        userId:
+          type: integer
+          minimum: 1
+          example: 1
+        instrumentId:
+          type: integer
+          minimum: 1
+          example: 34
+        side:
+          type: string
+          enum: [BUY, SELL, CASH_IN, CASH_OUT]
+          example: BUY
+        type:
+          type: string
+          enum: [MARKET]
+          example: MARKET
+        size:
+          type: integer
+          minimum: 1
+          description: Cantidad de acciones. Mutuamente excluyente con `amount`.
+          example: 5
+        amount:
+          type: number
+          minimum: 0.01
+          description: Monto en pesos. Mutuamente excluyente con `size`.
+          example: 10000
+        datetime:
+          type: string
+          format: date-time
+          description: |
+            Fecha/hora de la orden en ISO 8601 UTC. Si se omite se usa `now()`.
+            Si se envía sin timezone se interpreta como UTC.
+          example: "2026-02-20T17:00:00.000Z"
+
+    LimitOrderInput:
+      type: object
+      required: [userId, instrumentId, side, type, price]
+      description: Orden limitada. Se registra con estado NEW hasta que se ejecute al precio indicado.
+      properties:
+        userId:
+          type: integer
+          minimum: 1
+          example: 1
+        instrumentId:
+          type: integer
+          minimum: 1
+          example: 34
+        side:
+          type: string
+          enum: [BUY, SELL]
+          example: BUY
+        type:
+          type: string
+          enum: [LIMIT]
+          example: LIMIT
+        price:
+          type: number
+          minimum: 0.01
+          description: Precio límite por unidad.
+          example: 800
+        size:
+          type: integer
+          minimum: 1
+          description: Cantidad de acciones. Mutuamente excluyente con `amount`.
+          example: 10
+        amount:
+          type: number
+          minimum: 0.01
+          description: Monto en pesos. Mutuamente excluyente con `size`.
+          example: 8000
+        datetime:
+          type: string
+          format: date-time
+          example: "2026-02-20T17:00:00.000Z"
+
+    # ── Response schemas ─────────────────────────────────────────────────────
+
+    OrderResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 101
+        userId:
+          type: integer
+          example: 1
+        instrumentId:
+          type: integer
+          example: 34
+        side:
+          type: string
+          enum: [BUY, SELL, CASH_IN, CASH_OUT]
+          example: BUY
+        type:
+          type: string
+          enum: [MARKET, LIMIT]
+          example: MARKET
+        size:
+          type: integer
+          example: 56
+        price:
+          type: number
+          example: 885.80
+        status:
+          type: string
+          enum: [NEW, FILLED, REJECTED, CANCELLED]
+          example: FILLED
+        datetime:
+          type: string
+          format: date-time
+          example: "2026-02-20T17:00:00.000Z"
+
+    CreateOrderResponse:
+      type: object
+      properties:
+        order:
+          $ref: '#/components/schemas/OrderResponse'
+
+    CancelOrderResponse:
+      type: object
+      properties:
+        order:
+          $ref: '#/components/schemas/OrderResponse'
+
+    InstrumentResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 34
+        ticker:
+          type: string
+          example: GGAL
+        name:
+          type: string
+          example: Grupo Financiero Galicia
+        type:
+          type: string
+          example: ACCIONES
+        marketPrice:
+          type: number
+          description: Último precio de cierre del instrumento. Puede ser `null` si no hay datos de mercado.
+          example: 885.80
+        returnPct:
+          type: number
+          description: "Rendimiento diario: variación porcentual entre `close` y `previousClose`. Es 0 si no hay datos."
+          example: -3.4813
+
+    SearchInstrumentsResponse:
+      type: object
+      properties:
+        instruments:
+          type: array
+          items:
+            $ref: '#/components/schemas/InstrumentResponse'
+
+    PortfolioAsset:
+      type: object
+      properties:
+        instrument:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 47
+            ticker:
+              type: string
+              example: PAMP
+            description:
+              type: string
+              example: Pampa Holding S.A.
+        quantity:
+          type: integer
+          example: 40
+        marketValue:
+          type: number
+          example: 37034
+        returnPct:
+          type: number
+          description: "Rendimiento diario del instrumento: variación porcentual entre `close` y `previousClose`. Es 0 si no hay datos de mercado disponibles."
+          example: 0.4394
+
+    GetPortfolioResponse:
+      type: object
+      properties:
+        totalAccountValue:
+          type: number
+          description: Saldo en pesos + valor de mercado de todos los activos.
+          example: 904784
+        pesosBalance:
+          type: number
+          description: Saldo disponible en pesos.
+          example: 753000
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/PortfolioAsset'
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Nombre de la clase de error (DomainError) o código fijo (VALIDATION_ERROR / INTERNAL_ERROR)
+          example: OrderNotFoundError
+        message:
+          type: string
+          example: Order not found for user 1.
+        details:
+          type: array
+          description: Solo presente en errores de validación Zod
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+
+  # ── Reusable responses ───────────────────────────────────────────────────
+
+  responses:
+    BadRequest:
+      description: Error de validación (ZodError o DomainError)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            domain_error:
+              summary: DomainError
+              value:
+                code: OrderNotCancellableError
+                message: "Order cannot be cancelled: current status is FILLED. Only NEW orders can be cancelled."
+            validation_error:
+              summary: ZodError
+              value:
+                code: VALIDATION_ERROR
+                message: Request validation failed.
+                details:
+                  - field: side
+                    message: "Invalid enum value."
+    InternalError:
+      description: Error interno del servidor
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: INTERNAL_ERROR
+            message: An unexpected error occurred.

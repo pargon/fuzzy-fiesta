@@ -1,0 +1,2419 @@
+{
+  "info": {
+    "name": "Fuzzy Fiesta Trading API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - servidor activo",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":\"ok\"}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GET /instruments",
+      "item": [
+        {
+          "name": "Buscar por ticker",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/instruments?q=GGAL",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "instruments"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "GGAL"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - instrumento encontrado",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"instruments\": [\n    {\n      \"id\": 34,\n      \"ticker\": \"GGAL\",\n      \"name\": \"Grupo Financiero Galicia\",\n      \"type\": \"ACCIONES\",\n      \"marketPrice\": 885.8,\n      \"returnPct\": -3.4813\n    }\n  ]\n}"
+            },
+            {
+              "name": "200 OK - sin resultados",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"instruments\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Buscar por nombre parcial",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/instruments?q=Galicia",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "instruments"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "Galicia"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - busqueda por nombre",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"instruments\": [\n    {\n      \"id\": 34,\n      \"ticker\": \"GGAL\",\n      \"name\": \"Grupo Financiero Galicia\",\n      \"type\": \"ACCIONES\",\n      \"marketPrice\": 885.8,\n      \"returnPct\": -3.4813\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "ERROR 400 - query vacio (ZodError)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/instruments?q=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "instruments"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "400 - query vacio",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"VALIDATION_ERROR\",\n  \"message\": \"Request validation failed.\",\n  \"details\": [\n    {\n      \"field\": \"q\",\n      \"message\": \"Search query cannot be empty.\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "ERROR 400 - sin parametro q (ZodError)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/instruments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "instruments"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "400 - parametro q faltante",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"VALIDATION_ERROR\",\n  \"message\": \"Request validation failed.\",\n  \"details\": [\n    {\n      \"field\": \"q\",\n      \"message\": \"Required\"\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GET /portfolio/:userId",
+      "item": [
+        {
+          "name": "Portfolio del usuario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/portfolio/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portfolio",
+                "1"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - portfolio con activos (PAMP + METR)",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"totalAccountValue\": 904784,\n  \"pesosBalance\": 753000,\n  \"assets\": [\n    {\n      \"instrument\": {\n        \"id\": 47,\n        \"ticker\": \"PAMP\",\n        \"description\": \"Pampa Holding S.A.\"\n      },\n      \"quantity\": 40,\n      \"marketValue\": 37034,\n      \"returnPct\": 0.4394\n    },\n    {\n      \"instrument\": {\n        \"id\": 54,\n        \"ticker\": \"METR\",\n        \"description\": \"MetroGAS S.A.\"\n      },\n      \"quantity\": 500,\n      \"marketValue\": 114750,\n      \"returnPct\": -1.0776\n    }\n  ]\n}"
+            },
+            {
+              "name": "200 OK - portfolio vacio",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"totalAccountValue\": 0,\n  \"pesosBalance\": 0,\n  \"assets\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "ERROR 400 - userId no numerico (ZodError)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/portfolio/abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portfolio",
+                "abc"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "400 - userId no numerico",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"VALIDATION_ERROR\",\n  \"message\": \"Request validation failed.\",\n  \"details\": [\n    {\n      \"field\": \"userId\",\n      \"message\": \"Expected number, received nan\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "ERROR 400 - userId negativo (ZodError)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/portfolio/-1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portfolio",
+                "-1"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "400 - userId negativo",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"VALIDATION_ERROR\",\n  \"message\": \"Request validation failed.\",\n  \"details\": [\n    {\n      \"field\": \"userId\",\n      \"message\": \"Number must be greater than 0\"\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "POST /orders",
+      "item": [
+        {
+          "name": "BUY MARKET - por monto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"amount\": 50000\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 FILLED - orden ejecutada",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"order\": {\n    \"id\": 101,\n    \"instrumentId\": 34,\n    \"userId\": 1,\n    \"size\": 56,\n    \"price\": 885.8,\n    \"type\": \"MARKET\",\n    \"side\": \"BUY\",\n    \"status\": \"FILLED\",\n    \"datetime\": \"2026-02-20T17:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "BUY MARKET - por cantidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"size\": 10\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 FILLED - orden ejecutada",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"order\": {\n    \"id\": 102,\n    \"instrumentId\": 34,\n    \"userId\": 1,\n    \"size\": 10,\n    \"price\": 885.8,\n    \"type\": \"MARKET\",\n    \"side\": \"BUY\",\n    \"status\": \"FILLED\",\n    \"datetime\": \"2026-02-20T17:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "BUY MARKET - con datetime explicito (UTC)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"amount\": 20000,\n  \"datetime\": \"2026-02-20T17:00:00.000Z\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 FILLED - orden con datetime explicito",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"order\": {\n    \"id\": 103,\n    \"instrumentId\": 34,\n    \"userId\": 1,\n    \"size\": 22,\n    \"price\": 885.8,\n    \"type\": \"MARKET\",\n    \"side\": \"BUY\",\n    \"status\": \"FILLED\",\n    \"datetime\": \"2026-02-20T17:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "BUY LIMIT - precio + cantidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"LIMIT\",\n  \"price\": 3500,\n  \"size\": 5\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 NEW - orden registrada pendiente",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"order\": {\n    \"id\": 104,\n    \"instrumentId\": 34,\n    \"userId\": 1,\n    \"size\": 5,\n    \"price\": 3500,\n    \"type\": \"LIMIT\",\n    \"side\": \"BUY\",\n    \"status\": \"NEW\",\n    \"datetime\": \"2026-02-20T17:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "SELL MARKET - por cantidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 34,\n  \"side\": \"SELL\",\n  \"type\": \"MARKET\",\n  \"size\": 5\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 FILLED - venta ejecutada",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"order\": {\n    \"id\": 105,\n    \"instrumentId\": 34,\n    \"userId\": 1,\n    \"size\": 5,\n    \"price\": 885.8,\n    \"type\": \"MARKET\",\n    \"side\": \"SELL\",\n    \"status\": \"FILLED\",\n    \"datetime\": \"2026-02-20T17:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "SELL LIMIT - precio + cantidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 34,\n  \"side\": \"SELL\",\n  \"type\": \"LIMIT\",\n  \"price\": 3800,\n  \"size\": 3\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 NEW - venta limite registrada",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"order\": {\n    \"id\": 106,\n    \"instrumentId\": 34,\n    \"userId\": 1,\n    \"size\": 3,\n    \"price\": 3800,\n    \"type\": \"LIMIT\",\n    \"side\": \"SELL\",\n    \"status\": \"NEW\",\n    \"datetime\": \"2026-02-20T17:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "CASH_IN - ingreso de efectivo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 66,\n  \"side\": \"CASH_IN\",\n  \"type\": \"MARKET\",\n  \"amount\": 100000\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 FILLED - deposito acreditado",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"order\": {\n    \"id\": 107,\n    \"instrumentId\": 66,\n    \"userId\": 1,\n    \"size\": 100000,\n    \"price\": 1,\n    \"type\": \"MARKET\",\n    \"side\": \"CASH_IN\",\n    \"status\": \"FILLED\",\n    \"datetime\": \"2026-02-20T17:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "CASH_OUT - retiro de efectivo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 66,\n  \"side\": \"CASH_OUT\",\n  \"type\": \"MARKET\",\n  \"amount\": 5000\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 FILLED - retiro acreditado",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"order\": {\n    \"id\": 108,\n    \"instrumentId\": 66,\n    \"userId\": 1,\n    \"size\": 5000,\n    \"price\": 1,\n    \"type\": \"MARKET\",\n    \"side\": \"CASH_OUT\",\n    \"status\": \"FILLED\",\n    \"datetime\": \"2026-02-20T17:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "REJECTED - fondos insuficientes (BUY)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"size\": 999999\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "400 OrderRejectedError - fondos insuficientes",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"OrderRejectedError\",\n  \"message\": \"Insufficient funds for BUY order.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "REJECTED - tenencia insuficiente (SELL)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 34,\n  \"side\": \"SELL\",\n  \"type\": \"MARKET\",\n  \"size\": 999999\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "400 OrderRejectedError - tenencia insuficiente",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"OrderRejectedError\",\n  \"message\": \"Insufficient shares for SELL order.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "ERROR 400 - instrumento MONEDA con BUY (IncompatibleInstrumentError)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 66,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"amount\": 10000\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "400 IncompatibleInstrumentError - MONEDA no acepta BUY",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"IncompatibleInstrumentError\",\n  \"message\": \"Instrument of type MONEDA can only be used with CASH_IN or CASH_OUT orders.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "ERROR 400 - CASH_IN con tipo LIMIT (IncompatibleInstrumentError)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 66,\n  \"side\": \"CASH_IN\",\n  \"type\": \"LIMIT\",\n  \"price\": 1,\n  \"amount\": 10000\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "400 IncompatibleInstrumentError - CASH_IN debe ser MARKET",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"IncompatibleInstrumentError\",\n  \"message\": \"CASH_IN and CASH_OUT orders must be of type MARKET.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "ERROR 400 - instrumento no existe (InstrumentNotFoundError)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 999999,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"amount\": 10000\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "400 InstrumentNotFoundError - instrumento no existe",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"InstrumentNotFoundError\",\n  \"message\": \"Instrument 999999 not found.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "ERROR 400 - size y amount simultaneos (ZodError)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"size\": 5,\n  \"amount\": 10000\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "400 - size y amount mutuamente excluyentes",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"VALIDATION_ERROR\",\n  \"message\": \"Request validation failed.\",\n  \"details\": [\n    {\n      \"field\": \"\",\n      \"message\": \"Provide 'size' OR 'amount', but not both.\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "ERROR 400 - campos requeridos faltantes (ZodError)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"instrumentId\": 34,\n  \"side\": \"BUY\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "400 - userId y type faltantes",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"VALIDATION_ERROR\",\n  \"message\": \"Request validation failed.\",\n  \"details\": [\n    {\n      \"field\": \"userId\",\n      \"message\": \"Required\"\n    },\n    {\n      \"field\": \"type\",\n      \"message\": \"Invalid enum value. Expected 'MARKET' | 'LIMIT', received undefined\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "ERROR 400 - side invalido (ZodError)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 66,\n  \"side\": \"COMPRAR\",\n  \"type\": \"MARKET\",\n  \"amount\": 10000\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "400 - side no permitido",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"VALIDATION_ERROR\",\n  \"message\": \"Request validation failed.\",\n  \"details\": [\n    {\n      \"field\": \"side\",\n      \"message\": \"Invalid enum value. Expected 'BUY' | 'SELL' | 'CASH_IN' | 'CASH_OUT', received 'COMPRAR'\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "ERROR 400 - datetime en el futuro (InvalidOrderDatetimeError)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"amount\": 10000,\n  \"datetime\": \"2099-01-01T00:00:00.000Z\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "400 InvalidOrderDatetimeError - fecha futura",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"InvalidOrderDatetimeError\",\n  \"message\": \"Order datetime cannot be in the future.\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DELETE /orders/:orderId",
+      "item": [
+        {
+          "name": "Cancelar orden NEW",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "5"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - orden cancelada",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"order\": {\n    \"id\": 5,\n    \"instrumentId\": 45,\n    \"userId\": 1,\n    \"size\": 50,\n    \"price\": 710,\n    \"type\": \"LIMIT\",\n    \"side\": \"BUY\",\n    \"status\": \"CANCELLED\",\n    \"datetime\": \"2023-07-12T15:14:20.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "ERROR 400 - orden no encontrada (OrderNotFoundError)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "999999"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "400 OrderNotFoundError - orden inexistente",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"OrderNotFoundError\",\n  \"message\": \"Order 999999 not found.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "ERROR 400 - orden pertenece a otro usuario (OrderNotFoundError)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "5"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 999999\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "400 OrderNotFoundError - usuario no propietario",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"OrderNotFoundError\",\n  \"message\": \"Order not found for user 999999.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "ERROR 400 - orden no cancelable / estado != NEW (OrderNotCancellableError)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "2"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "400 OrderNotCancellableError - estado FILLED",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"OrderNotCancellableError\",\n  \"message\": \"Order cannot be cancelled: current status is FILLED. Only NEW orders can be cancelled.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "ERROR 400 - orderId no numerico (ZodError)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "abc"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"userId\": 1\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "400 - orderId invalido",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"VALIDATION_ERROR\",\n  \"message\": \"Request validation failed.\",\n  \"details\": [\n    {\n      \"field\": \"orderId\",\n      \"message\": \"Expected number, received nan\"\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "E2E - Ciclo Completo: CashIn → Compra → Venta → CashOut",
+      "description": "Flujo E2E completo partiendo de un usuario nuevo sin saldo ni tenencias (userId=4, juan@test.com).\n\nPRE-CONDICIÓN: El usuario 4 no debe tener órdenes previas en la base de datos.\n\nInstrumentos utilizados:\n- ARS  (MONEDA):  instrumentId=66\n- GGAL (ACCIONES): instrumentId=34, precio close ~885.80\n- PGR  (ACCIONES sin marketdata): instrumentId=3\n\nFlujo nominal:\n1. CASH_IN  500 000 ARS\n2. BUY MARKET GGAL  amount=200 000 → 225 acciones @ 885.80 = 199 305\n3. BUY LIMIT  GGAL  price=800  size=10  (queda en NEW)\n4. SELL MARKET GGAL size=150\n5. SELL MARKET GGAL size=75   (liquida todo)\n6. CASH_OUT 500 000 ARS",
+      "item": [
+        {
+          "name": "0. Estado Inicial",
+          "item": [
+            {
+              "name": "Portfolio vacío del usuario nuevo",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/portfolio/4",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "portfolio",
+                    "4"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "200 OK - sin saldo ni tenencias",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"totalAccountValue\": 0,\n  \"pesosBalance\": 0,\n  \"assets\": []\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "1. Errores en CASH_IN",
+          "item": [
+            {
+              "name": "ERROR - CASH_IN con instrumento ACCIONES (IncompatibleInstrumentError)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 34,\n  \"side\": \"CASH_IN\",\n  \"type\": \"MARKET\",\n  \"amount\": 500000\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "400 IncompatibleInstrumentError - CASH_IN requiere MONEDA",
+                  "status": "Bad Request",
+                  "code": 400,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"code\": \"IncompatibleInstrumentError\",\n  \"message\": \"CASH_IN and CASH_OUT orders require an instrument of type MONEDA.\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "ERROR - CASH_IN con instrumento inexistente (InstrumentNotFoundError)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 999999,\n  \"side\": \"CASH_IN\",\n  \"type\": \"MARKET\",\n  \"amount\": 500000\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "400 InstrumentNotFoundError - instrumento no existe",
+                  "status": "Bad Request",
+                  "code": 400,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"code\": \"InstrumentNotFoundError\",\n  \"message\": \"Instrument 999999 not found.\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "ERROR - CASH_IN tipo LIMIT (IncompatibleInstrumentError)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 66,\n  \"side\": \"CASH_IN\",\n  \"type\": \"LIMIT\",\n  \"price\": 1,\n  \"amount\": 500000\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "400 IncompatibleInstrumentError - CASH_IN debe ser MARKET",
+                  "status": "Bad Request",
+                  "code": 400,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"code\": \"IncompatibleInstrumentError\",\n  \"message\": \"CASH_IN and CASH_OUT orders must be of type MARKET.\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "ERROR - CASH_IN sin amount ni size (ZodError)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 66,\n  \"side\": \"CASH_IN\",\n  \"type\": \"MARKET\"\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "400 VALIDATION_ERROR - falta amount o size",
+                  "status": "Bad Request",
+                  "code": 400,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"code\": \"VALIDATION_ERROR\",\n  \"message\": \"Request validation failed.\",\n  \"details\": [\n    {\n      \"field\": \"\",\n      \"message\": \"Provide 'size' or 'amount'.\"\n    }\n  ]\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "2. CASH_IN Exitoso",
+          "item": [
+            {
+              "name": "CASH_IN - depositar 500 000 ARS",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 66,\n  \"side\": \"CASH_IN\",\n  \"type\": \"MARKET\",\n  \"amount\": 500000\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "201 FILLED - depósito acreditado",
+                  "status": "Created",
+                  "code": 201,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"order\": {\n    \"id\": 201,\n    \"instrumentId\": 66,\n    \"userId\": 4,\n    \"size\": 500000,\n    \"price\": 1,\n    \"type\": \"MARKET\",\n    \"side\": \"CASH_IN\",\n    \"status\": \"FILLED\",\n    \"datetime\": \"2026-02-24T12:00:00.000Z\"\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Portfolio después de CASH_IN",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/portfolio/4",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "portfolio",
+                    "4"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "200 OK - solo saldo en pesos",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"totalAccountValue\": 500000,\n  \"pesosBalance\": 500000,\n  \"assets\": []\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "3. Errores en BUY Acciones",
+          "item": [
+            {
+              "name": "ERROR - BUY con instrumento MONEDA (IncompatibleInstrumentError)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 66,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"amount\": 50000\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "400 IncompatibleInstrumentError - MONEDA no acepta BUY",
+                  "status": "Bad Request",
+                  "code": 400,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"code\": \"IncompatibleInstrumentError\",\n  \"message\": \"Instrument of type MONEDA can only be used with CASH_IN or CASH_OUT orders.\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "ERROR - BUY con instrumento inexistente (InstrumentNotFoundError)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 999999,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"amount\": 50000\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "400 InstrumentNotFoundError - instrumento no existe",
+                  "status": "Bad Request",
+                  "code": 400,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"code\": \"InstrumentNotFoundError\",\n  \"message\": \"Instrument 999999 not found.\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "ERROR - BUY MARKET sin precio de mercado (OrderPricingError)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 3,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"amount\": 50000\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "400 OrderPricingError - PGR sin marketdata",
+                  "status": "Bad Request",
+                  "code": 400,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"code\": \"OrderPricingError\",\n  \"message\": \"No market close price found for instrument PGR.\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "ERROR - BUY fondos insuficientes (OrderRejectedError)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"size\": 999999\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "400 OrderRejectedError - fondos insuficientes (orden persiste como REJECTED)",
+                  "status": "Bad Request",
+                  "code": 400,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"code\": \"OrderRejectedError\",\n  \"message\": \"Insufficient funds for BUY order.\"\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "4. BUY Exitoso - GGAL",
+          "item": [
+            {
+              "name": "BUY MARKET GGAL - por monto (200 000 ARS)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"amount\": 200000\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "201 FILLED - 225 acciones @ 885.80 = 199 305 ARS",
+                  "status": "Created",
+                  "code": 201,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"order\": {\n    \"id\": 202,\n    \"instrumentId\": 34,\n    \"userId\": 4,\n    \"size\": 225,\n    \"price\": 885.80,\n    \"type\": \"MARKET\",\n    \"side\": \"BUY\",\n    \"status\": \"FILLED\",\n    \"datetime\": \"2026-02-24T12:05:00.000Z\"\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "BUY LIMIT GGAL - precio 800 x 10 (orden pendiente)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"LIMIT\",\n  \"price\": 800,\n  \"size\": 10\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "201 NEW - orden límite registrada (no afecta portfolio hasta FILLED)",
+                  "status": "Created",
+                  "code": 201,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"order\": {\n    \"id\": 203,\n    \"instrumentId\": 34,\n    \"userId\": 4,\n    \"size\": 10,\n    \"price\": 800,\n    \"type\": \"LIMIT\",\n    \"side\": \"BUY\",\n    \"status\": \"NEW\",\n    \"datetime\": \"2026-02-24T12:06:00.000Z\"\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Portfolio después de BUY",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/portfolio/4",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "portfolio",
+                    "4"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "200 OK - 225 GGAL + saldo restante 300 695",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"totalAccountValue\": 500000,\n  \"pesosBalance\": 300695,\n  \"assets\": [\n    {\n      \"instrument\": {\n        \"id\": 34,\n        \"ticker\": \"GGAL\",\n        \"description\": \"Grupo Financiero Galicia\"\n      },\n      \"quantity\": 225,\n      \"marketValue\": 199305,\n      \"returnPct\": 0.0000\n    }\n  ]\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "5. Errores en SELL Acciones",
+          "item": [
+            {
+              "name": "ERROR - SELL con instrumento MONEDA (IncompatibleInstrumentError)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 66,\n  \"side\": \"SELL\",\n  \"type\": \"MARKET\",\n  \"size\": 50000\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "400 IncompatibleInstrumentError - MONEDA no acepta SELL",
+                  "status": "Bad Request",
+                  "code": 400,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"code\": \"IncompatibleInstrumentError\",\n  \"message\": \"Instrument of type MONEDA can only be used with CASH_IN or CASH_OUT orders.\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "ERROR - SELL tenencia insuficiente (OrderRejectedError)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 34,\n  \"side\": \"SELL\",\n  \"type\": \"MARKET\",\n  \"size\": 9999\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "400 OrderRejectedError - tenencia insuficiente (orden persiste como REJECTED)",
+                  "status": "Bad Request",
+                  "code": 400,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"code\": \"OrderRejectedError\",\n  \"message\": \"Insufficient shares for SELL order.\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "ERROR - SELL instrumento que no se tiene (OrderRejectedError)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 47,\n  \"side\": \"SELL\",\n  \"type\": \"MARKET\",\n  \"size\": 1\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "400 OrderRejectedError - TGSU2 no está en portfolio del usuario 4",
+                  "status": "Bad Request",
+                  "code": 400,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"code\": \"OrderRejectedError\",\n  \"message\": \"Insufficient shares for SELL order.\"\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "6. SELL Exitoso - GGAL",
+          "item": [
+            {
+              "name": "SELL MARKET GGAL - parcial 150 acciones",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 34,\n  \"side\": \"SELL\",\n  \"type\": \"MARKET\",\n  \"size\": 150\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "201 FILLED - 150 x 885.80 = 132 870 ARS acreditados",
+                  "status": "Created",
+                  "code": 201,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"order\": {\n    \"id\": 204,\n    \"instrumentId\": 34,\n    \"userId\": 4,\n    \"size\": 150,\n    \"price\": 885.80,\n    \"type\": \"MARKET\",\n    \"side\": \"SELL\",\n    \"status\": \"FILLED\",\n    \"datetime\": \"2026-02-24T12:10:00.000Z\"\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Portfolio tras venta parcial",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/portfolio/4",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "portfolio",
+                    "4"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "200 OK - 75 GGAL restantes + saldo 433 565",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"totalAccountValue\": 500000,\n  \"pesosBalance\": 433565,\n  \"assets\": [\n    {\n      \"instrument\": {\n        \"id\": 34,\n        \"ticker\": \"GGAL\",\n        \"description\": \"Grupo Financiero Galicia\"\n      },\n      \"quantity\": 75,\n      \"marketValue\": 66435,\n      \"returnPct\": 0.0000\n    }\n  ]\n}"
+                }
+              ]
+            },
+            {
+              "name": "SELL MARKET GGAL - resto 75 acciones (cierra posición)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 34,\n  \"side\": \"SELL\",\n  \"type\": \"MARKET\",\n  \"size\": 75\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "201 FILLED - posición cerrada (75 x 885.80 = 66 435 ARS)",
+                  "status": "Created",
+                  "code": 201,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"order\": {\n    \"id\": 205,\n    \"instrumentId\": 34,\n    \"userId\": 4,\n    \"size\": 75,\n    \"price\": 885.80,\n    \"type\": \"MARKET\",\n    \"side\": \"SELL\",\n    \"status\": \"FILLED\",\n    \"datetime\": \"2026-02-24T12:12:00.000Z\"\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Portfolio tras venta total",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/portfolio/4",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "portfolio",
+                    "4"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "200 OK - sin acciones, saldo 500 000",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"totalAccountValue\": 500000,\n  \"pesosBalance\": 500000,\n  \"assets\": []\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "7. Errores en CASH_OUT",
+          "item": [
+            {
+              "name": "ERROR - CASH_OUT con instrumento ACCIONES (IncompatibleInstrumentError)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 34,\n  \"side\": \"CASH_OUT\",\n  \"type\": \"MARKET\",\n  \"amount\": 500000\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "400 IncompatibleInstrumentError - CASH_OUT requiere MONEDA",
+                  "status": "Bad Request",
+                  "code": 400,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"code\": \"IncompatibleInstrumentError\",\n  \"message\": \"CASH_IN and CASH_OUT orders require an instrument of type MONEDA.\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "ERROR - CASH_OUT monto mayor al saldo (OrderRejectedError)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 66,\n  \"side\": \"CASH_OUT\",\n  \"type\": \"MARKET\",\n  \"amount\": 9999999\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "400 OrderRejectedError - saldo insuficiente para retiro (orden persiste como REJECTED)",
+                  "status": "Bad Request",
+                  "code": 400,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"code\": \"OrderRejectedError\",\n  \"message\": \"Insufficient funds for CASH_OUT order.\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "ERROR - CASH_OUT tipo LIMIT (IncompatibleInstrumentError)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 66,\n  \"side\": \"CASH_OUT\",\n  \"type\": \"LIMIT\",\n  \"price\": 1,\n  \"amount\": 500000\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "400 IncompatibleInstrumentError - CASH_OUT debe ser MARKET",
+                  "status": "Bad Request",
+                  "code": 400,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"code\": \"IncompatibleInstrumentError\",\n  \"message\": \"CASH_IN and CASH_OUT orders must be of type MARKET.\"\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "8. CASH_OUT Exitoso",
+          "item": [
+            {
+              "name": "CASH_OUT - retirar 500 000 ARS",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/orders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "orders"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"userId\": 4,\n  \"instrumentId\": 66,\n  \"side\": \"CASH_OUT\",\n  \"type\": \"MARKET\",\n  \"amount\": 500000\n}"
+                }
+              },
+              "response": [
+                {
+                  "name": "201 FILLED - retiro acreditado",
+                  "status": "Created",
+                  "code": 201,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"order\": {\n    \"id\": 206,\n    \"instrumentId\": 66,\n    \"userId\": 4,\n    \"size\": 500000,\n    \"price\": 1,\n    \"type\": \"MARKET\",\n    \"side\": \"CASH_OUT\",\n    \"status\": \"FILLED\",\n    \"datetime\": \"2026-02-24T12:15:00.000Z\"\n  }\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "9. Estado Final",
+          "item": [
+            {
+              "name": "Portfolio vacío — ciclo completo cerrado",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/portfolio/4",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "portfolio",
+                    "4"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "200 OK - portfolio vacío (saldo 0, sin activos)",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"totalAccountValue\": 0,\n  \"pesosBalance\": 0,\n  \"assets\": []\n}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
