@@ -13,6 +13,7 @@ REST API para gestión de órdenes de inversión, construida con Node.js, TypeSc
 | Base de datos | PostgreSQL |
 | Inyección de dependencias | Awilix (PROXY mode) |
 | Validación | Zod |
+| Caché | node-cache (RAM, TTL 300s) |
 | Testing | Jest + Supertest |
 
 ## Requisitos previos
@@ -62,6 +63,23 @@ Inicia el servidor con recarga automática al detectar cambios:
 
 ```bash
 npm run dev
+```
+
+## Caché de Portfolio
+
+El cálculo de portfolio (`GET /portfolio/:userId`) utiliza **node-cache** (RAM) con estrategia **Cache-Aside**:
+
+- **Hit**: si el portfolio del usuario ya fue calculado, se devuelve directamente desde la caché.
+- **Miss**: se calcula desde la base de datos, se almacena en caché y se retorna.
+- **Invalidación proactiva**: cualquier orden aceptada (`POST /orders` exitoso) invalida automáticamente la entrada del usuario correspondiente.
+- **TTL**: las entradas expiran automáticamente a los **300 segundos** (5 minutos). El proceso de limpieza corre cada 60 segundos.
+
+La caché es un singleton compartido por toda la aplicación y se reinicia al reiniciar el proceso. Los logs en consola indican el estado en cada request:
+
+```
+[INFO] [Cache MISS] portfolio:1
+[INFO] [Cache HIT]  portfolio:1
+[INFO] [Cache INVALIDATED] portfolio:1
 ```
 
 ## Endpoints

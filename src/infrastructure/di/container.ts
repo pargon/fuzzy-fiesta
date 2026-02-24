@@ -16,6 +16,7 @@ import { InstrumentRepository } from "../persistence/repositories/instrument.rep
 import { MarketDataRepository } from "../persistence/repositories/market-data.repository";
 import { OrderRepository } from "../persistence/repositories/order.repository";
 import { ConsoleLogger } from "../logger/console.logger";
+import { InMemoryCacheAdapter } from "../cache/in-memory-cache.adapter";
 
 export function createContainer() {
   const container = createAwilixContainer({
@@ -24,6 +25,8 @@ export function createContainer() {
 
   container.register({
     logger: asClass(ConsoleLogger).singleton(),
+    portfolioCache: asClass(InMemoryCacheAdapter).singleton(),
+    
     orderRepository: asClass(OrderRepository).scoped(),
     instrumentRepository: asClass(InstrumentRepository).scoped(),
     marketDataReader: asClass(MarketDataRepository).scoped(),

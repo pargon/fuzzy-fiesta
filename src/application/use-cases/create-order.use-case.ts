@@ -10,6 +10,9 @@ import { OrderPricingService } from "../../domain/services/order-pricing.service
 import { OrderSizeService } from "../../domain/services/order-size.service";
 import { OrderRepositoryPort } from "../../domain/ports/order-repository.port";
 import { InstrumentRepositoryPort } from "../../domain/ports/instrument-repository.port";
+import { CachePort } from "../../domain/ports/cache.port";
+import { PortfolioResult } from "../../domain/services/portfolio-from-filled-orders.service";
+import { ILogger } from "../../domain/ports/logger.port";
 import { OrderRejectedError } from "../../domain/errors/order-rejected.error";
 import { InstrumentNotFoundError } from "../../domain/errors/instrument-not-found.error";
 import { UserId } from "../../domain/value-objects/user-id.vo";
@@ -23,6 +26,8 @@ interface Dependencies {
   availabilityService: OrderAvailabilityService;
   sizeService: OrderSizeService;
   orderFactory: OrderFactoryService;
+  portfolioCache: CachePort<PortfolioResult>;
+  logger: ILogger;
 }
 
 export class CreateOrderUseCase {
@@ -33,8 +38,10 @@ export class CreateOrderUseCase {
   private readonly availabilityService: OrderAvailabilityService;
   private readonly sizeService: OrderSizeService;
   private readonly orderFactory: OrderFactoryService;
+  private readonly portfolioCache: CachePort<PortfolioResult>;
+  private readonly logger: ILogger;
 
-  constructor({ orderRepository, instrumentRepository, portfolioApplicationService, pricingService, availabilityService, sizeService, orderFactory }: Dependencies) {
+  constructor({ orderRepository, instrumentRepository, portfolioApplicationService, pricingService, availabilityService, sizeService, orderFactory, portfolioCache, logger }: Dependencies) {
     this.orderRepository = orderRepository;
     this.instrumentRepository = instrumentRepository;
     this.portfolioApplicationService = portfolioApplicationService;
@@ -42,6 +49,8 @@ export class CreateOrderUseCase {
     this.availabilityService = availabilityService;
     this.sizeService = sizeService;
     this.orderFactory = orderFactory;
+    this.portfolioCache = portfolioCache;
+    this.logger = logger;
   }
 
   async execute(command: Readonly<CreateOrderCommand>): Promise<CreateOrderResult> {
@@ -101,6 +110,9 @@ export class CreateOrderUseCase {
     });
 
     const persistedOrder = await this.orderRepository.save(order);
+    const cacheKey = `portfolio:${userId.value}`;
+    await this.portfolioCache.delete(cacheKey);
+    this.logger.info(`[Cache INVALIDATED] ${cacheKey}`);
     return { order: persistedOrder };
   }
 }

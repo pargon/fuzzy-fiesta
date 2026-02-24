@@ -1,5 +1,6 @@
 import { Order } from "../entities/order.entity";
 import { calcDailyReturn } from "../../shared/market.utils";
+import { IPortfolioCalculatorPort } from "../ports/portfolio-calculator.port";
 
 export interface InstrumentInfo {
   ticker: string;
@@ -39,7 +40,7 @@ interface PositionAccumulator {
   currentPrice: number;
 }
 
-export class PortfolioFromFilledOrdersService {
+export class PortfolioFromFilledOrdersService implements IPortfolioCalculatorPort {
   calculatePositions(orders: Order[]): OrderAvailability {
     const { positions, pesosBalance } = this.buildPositions(orders);
 
